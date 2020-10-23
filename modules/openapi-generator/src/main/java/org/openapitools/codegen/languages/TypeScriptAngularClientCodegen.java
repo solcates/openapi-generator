@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.capitalize;
 import static org.openapitools.codegen.utils.StringUtils.*;
@@ -38,6 +40,8 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     private static String CLASS_NAME_SUFFIX_PATTERN = "^[a-zA-Z0-9]*$";
     private static String FILE_NAME_SUFFIX_PATTERN = "^[a-zA-Z0-9.-]*$";
 
+    public static enum QUERY_PARAM_OBJECT_FORMAT_TYPE {dot, json, key};
+
     private static final String DEFAULT_IMPORT_PREFIX = "./";
 
     public static final String NPM_REPOSITORY = "npmRepository";
@@ -48,6 +52,7 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     public static final String PROVIDED_IN_ROOT = "providedInRoot";
     public static final String ENFORCE_GENERIC_MODULE_WITH_PROVIDERS = "enforceGenericModuleWithProviders";
     public static final String API_MODULE_PREFIX = "apiModulePrefix";
+    public static final String CONFIGURATION_PREFIX = "configurationPrefix";
     public static final String SERVICE_SUFFIX = "serviceSuffix";
     public static final String SERVICE_FILE_SUFFIX = "serviceFileSuffix";
     public static final String MODEL_SUFFIX = "modelSuffix";
@@ -55,8 +60,9 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     public static final String FILE_NAMING = "fileNaming";
     public static final String STRING_ENUMS = "stringEnums";
     public static final String STRING_ENUMS_DESC = "Generate string enums instead of objects for enum values.";
+    public static final String QUERY_PARAM_OBJECT_FORMAT = "queryParamObjectFormat";
 
-    protected String ngVersion = "9.0.0";
+    protected String ngVersion = "10.0.0";
     protected String npmRepository = null;
     private boolean useSingleRequestParameter = false;
     protected String serviceSuffix = "Service";
@@ -65,6 +71,7 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
     protected String modelFileSuffix = "";
     protected String fileNaming = "camelCase";
     protected Boolean stringEnums = false;
+    protected QUERY_PARAM_OBJECT_FORMAT_TYPE queryParamObjectFormat = QUERY_PARAM_OBJECT_FORMAT_TYPE.dot;
 
     private boolean taggedUnions = false;
 
@@ -101,12 +108,14 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
                 false));
         this.cliOptions.add(new CliOption(NG_VERSION, "The version of Angular. (At least 6.0.0)").defaultValue(this.ngVersion));
         this.cliOptions.add(new CliOption(API_MODULE_PREFIX, "The prefix of the generated ApiModule."));
+        this.cliOptions.add(new CliOption(CONFIGURATION_PREFIX, "The prefix of the generated Configuration."));
         this.cliOptions.add(new CliOption(SERVICE_SUFFIX, "The suffix of the generated service.").defaultValue(this.serviceSuffix));
         this.cliOptions.add(new CliOption(SERVICE_FILE_SUFFIX, "The suffix of the file of the generated service (service<suffix>.ts).").defaultValue(this.serviceFileSuffix));
         this.cliOptions.add(new CliOption(MODEL_SUFFIX, "The suffix of the generated model."));
         this.cliOptions.add(new CliOption(MODEL_FILE_SUFFIX, "The suffix of the file of the generated model (model<suffix>.ts)."));
         this.cliOptions.add(new CliOption(FILE_NAMING, "Naming convention for the output files: 'camelCase', 'kebab-case'.").defaultValue(this.fileNaming));
         this.cliOptions.add(new CliOption(STRING_ENUMS, STRING_ENUMS_DESC).defaultValue(String.valueOf(this.stringEnums)));
+        this.cliOptions.add(new CliOption(QUERY_PARAM_OBJECT_FORMAT, "The format for query param objects: 'dot', 'json', 'key'.").defaultValue(this.queryParamObjectFormat.name()));
     }
 
     @Override
@@ -122,7 +131,7 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
 
     @Override
     public String getHelp() {
-        return "Generates a TypeScript Angular (6.x - 9.x) client library.";
+        return "Generates a TypeScript Angular (6.x - 10.x) client library.";
     }
 
     @Override
@@ -203,6 +212,16 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
         } else {
             additionalProperties.put("apiModuleClassName", "ApiModule");
         }
+        if (additionalProperties.containsKey(CONFIGURATION_PREFIX)) {
+            String configurationPrefix = additionalProperties.get(CONFIGURATION_PREFIX).toString();
+            validateClassPrefixArgument("Configuration", configurationPrefix);
+
+            additionalProperties.put("configurationClassName", configurationPrefix + "Configuration");
+            additionalProperties.put("configurationParametersInterfaceName", configurationPrefix + "ConfigurationParameters");
+        } else {
+            additionalProperties.put("configurationClassName", "Configuration");
+            additionalProperties.put("configurationParametersInterfaceName", "ConfigurationParameters");
+        }
         if (additionalProperties.containsKey(SERVICE_SUFFIX)) {
             serviceSuffix = additionalProperties.get(SERVICE_SUFFIX).toString();
             validateClassSuffixArgument("Service", serviceSuffix);
@@ -223,6 +242,13 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
             this.setFileNaming(additionalProperties.get(FILE_NAMING).toString());
         }
 
+        if (additionalProperties.containsKey(QUERY_PARAM_OBJECT_FORMAT)) {
+            setQueryParamObjectFormat((String) additionalProperties.get(QUERY_PARAM_OBJECT_FORMAT));
+        }
+        additionalProperties.put("isQueryParamObjectFormatDot", getQueryParamObjectFormatDot());
+        additionalProperties.put("isQueryParamObjectFormatJson", getQueryParamObjectFormatJson());
+        additionalProperties.put("isQueryParamObjectFormatKey", getQueryParamObjectFormatKey());
+
     }
 
     private void addNpmPackageGeneration(SemVer ngVersion) {
@@ -232,7 +258,9 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
         }
 
         // Set the typescript version compatible to the Angular version
-        if (ngVersion.atLeast("9.0.0")) {
+        if (ngVersion.atLeast("10.0.0")) {
+            additionalProperties.put("tsVersion", ">=3.9.2 <4.0.0");
+        } else if (ngVersion.atLeast("9.0.0")) {
             additionalProperties.put("tsVersion", ">=3.6.0 <3.8.0");
         } else if (ngVersion.atLeast("8.0.0")) {
             additionalProperties.put("tsVersion", ">=3.4.0 <3.6.0");
@@ -244,7 +272,9 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
         }
 
         // Set the rxJS version compatible to the Angular version
-        if (ngVersion.atLeast("9.0.0")) {
+        if (ngVersion.atLeast("10.0.0")) {
+            additionalProperties.put("rxjsVersion", "6.6.0");
+        } else if (ngVersion.atLeast("9.0.0")) {
             additionalProperties.put("rxjsVersion", "6.5.3");
         } else if (ngVersion.atLeast("8.0.0")) {
             additionalProperties.put("rxjsVersion", "6.5.0");
@@ -258,7 +288,10 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
         supportingFiles.add(new SupportingFile("ng-package.mustache", getIndexDirectory(), "ng-package.json"));
 
         // Specific ng-packagr configuration
-        if (ngVersion.atLeast("9.0.0")) {
+        if (ngVersion.atLeast("10.0.0")) {
+            additionalProperties.put("ngPackagrVersion", "10.0.3");
+            additionalProperties.put("tsickleVersion", "0.39.1");
+        } else if (ngVersion.atLeast("9.0.0")) {
             additionalProperties.put("ngPackagrVersion", "9.0.1");
             additionalProperties.put("tsickleVersion", "0.38.0");
         } else if (ngVersion.atLeast("8.0.0")) {
@@ -303,11 +336,23 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
         return stringEnums;
     }
 
+    public boolean getQueryParamObjectFormatDot() {
+        return QUERY_PARAM_OBJECT_FORMAT_TYPE.dot.equals(queryParamObjectFormat);
+    }
+
+    public boolean getQueryParamObjectFormatJson() {
+        return QUERY_PARAM_OBJECT_FORMAT_TYPE.json.equals(queryParamObjectFormat);
+    }
+
+    public boolean getQueryParamObjectFormatKey() {
+        return QUERY_PARAM_OBJECT_FORMAT_TYPE.key.equals(queryParamObjectFormat);
+    }
+
     @Override
     public boolean isDataTypeFile(final String dataType) {
         return dataType != null && dataType.equals("Blob");
     }
-
+ 
     @Override
     public String getTypeDeclaration(Schema p) {
         if (ModelUtils.isFileSchema(p)) {
@@ -612,6 +657,24 @@ public class TypeScriptAngularClientCodegen extends AbstractTypeScriptClientCode
             throw new IllegalArgumentException(
                     String.format(Locale.ROOT, "%s class suffix only allows alphanumeric characters.", argument)
             );
+        }
+    }
+
+    /**
+     * Set the query param object format.
+     *
+     * @param format the query param object format to use
+     */
+    public void setQueryParamObjectFormat(String format) {
+        try {
+            queryParamObjectFormat = QUERY_PARAM_OBJECT_FORMAT_TYPE.valueOf(format);
+        } catch (IllegalArgumentException e) {
+            String values = Stream.of(QUERY_PARAM_OBJECT_FORMAT_TYPE.values())
+                    .map(value -> "'" + value.name() + "'")
+                    .collect(Collectors.joining(", "));
+
+            String msg = String.format(Locale.ROOT, "Invalid query param object format '%s'. Must be one of %s.", format, values);
+            throw new IllegalArgumentException(msg);
         }
     }
 

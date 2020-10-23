@@ -27,7 +27,7 @@ import javax.validation.constraints.*;
 @Api(description = "the store API")
 
 
-
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSCXFCDIServerCodegen")
 
 public class StoreApi  {
 
@@ -53,8 +53,9 @@ public class StoreApi  {
     
     @Produces({ "application/json" })
     @ApiOperation(value = "Returns pet inventories by status", notes = "Returns a map of status codes to quantities", response = Integer.class, responseContainer = "Map", authorizations = {
+        
         @Authorization(value = "api_key")
-    }, tags={ "store",  })
+         }, tags={ "store",  })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "successful operation", response = Map.class, responseContainer = "Map") })
     public Response getInventory() {

@@ -2,7 +2,7 @@
 /**
  * EnumTest
  *
- * PHP version 7.1
+ * PHP version 7.2
  *
  * @category Class
  * @package  OpenAPI\Client
@@ -39,10 +39,13 @@ use \OpenAPI\Client\ObjectSerializer;
  * @package  OpenAPI\Client
  * @author   OpenAPI Generator team
  * @link     https://openapi-generator.tech
+ * @implements \ArrayAccess<TKey, TValue>
+ * @template TKey int|null
+ * @template TValue mixed|null  
  */
-class EnumTest implements ModelInterface, ArrayAccess
+class EnumTest implements ModelInterface, ArrayAccess, \JsonSerializable
 {
-    const DISCRIMINATOR = null;
+    public const DISCRIMINATOR = null;
 
     /**
       * The original name of the model.
@@ -61,20 +64,28 @@ class EnumTest implements ModelInterface, ArrayAccess
         'enum_string_required' => 'string',
         'enum_integer' => 'int',
         'enum_number' => 'double',
-        'outer_enum' => '\OpenAPI\Client\Model\OuterEnum'
+        'outer_enum' => '\OpenAPI\Client\Model\OuterEnum',
+        'outer_enum_integer' => '\OpenAPI\Client\Model\OuterEnumInteger',
+        'outer_enum_default_value' => '\OpenAPI\Client\Model\OuterEnumDefaultValue',
+        'outer_enum_integer_default_value' => '\OpenAPI\Client\Model\OuterEnumIntegerDefaultValue'
     ];
 
     /**
       * Array of property to format mappings. Used for (de)serialization
       *
       * @var string[]
+      * @phpstan-var array<string, string|null>
+      * @psalm-var array<string, string|null>
       */
     protected static $openAPIFormats = [
         'enum_string' => null,
         'enum_string_required' => null,
         'enum_integer' => 'int32',
         'enum_number' => 'double',
-        'outer_enum' => null
+        'outer_enum' => null,
+        'outer_enum_integer' => null,
+        'outer_enum_default_value' => null,
+        'outer_enum_integer_default_value' => null
     ];
 
     /**
@@ -108,7 +119,10 @@ class EnumTest implements ModelInterface, ArrayAccess
         'enum_string_required' => 'enum_string_required',
         'enum_integer' => 'enum_integer',
         'enum_number' => 'enum_number',
-        'outer_enum' => 'outerEnum'
+        'outer_enum' => 'outerEnum',
+        'outer_enum_integer' => 'outerEnumInteger',
+        'outer_enum_default_value' => 'outerEnumDefaultValue',
+        'outer_enum_integer_default_value' => 'outerEnumIntegerDefaultValue'
     ];
 
     /**
@@ -121,7 +135,10 @@ class EnumTest implements ModelInterface, ArrayAccess
         'enum_string_required' => 'setEnumStringRequired',
         'enum_integer' => 'setEnumInteger',
         'enum_number' => 'setEnumNumber',
-        'outer_enum' => 'setOuterEnum'
+        'outer_enum' => 'setOuterEnum',
+        'outer_enum_integer' => 'setOuterEnumInteger',
+        'outer_enum_default_value' => 'setOuterEnumDefaultValue',
+        'outer_enum_integer_default_value' => 'setOuterEnumIntegerDefaultValue'
     ];
 
     /**
@@ -134,7 +151,10 @@ class EnumTest implements ModelInterface, ArrayAccess
         'enum_string_required' => 'getEnumStringRequired',
         'enum_integer' => 'getEnumInteger',
         'enum_number' => 'getEnumNumber',
-        'outer_enum' => 'getOuterEnum'
+        'outer_enum' => 'getOuterEnum',
+        'outer_enum_integer' => 'getOuterEnumInteger',
+        'outer_enum_default_value' => 'getOuterEnumDefaultValue',
+        'outer_enum_integer_default_value' => 'getOuterEnumIntegerDefaultValue'
     ];
 
     /**
@@ -261,11 +281,14 @@ class EnumTest implements ModelInterface, ArrayAccess
      */
     public function __construct(array $data = null)
     {
-        $this->container['enum_string'] = isset($data['enum_string']) ? $data['enum_string'] : null;
-        $this->container['enum_string_required'] = isset($data['enum_string_required']) ? $data['enum_string_required'] : null;
-        $this->container['enum_integer'] = isset($data['enum_integer']) ? $data['enum_integer'] : null;
-        $this->container['enum_number'] = isset($data['enum_number']) ? $data['enum_number'] : null;
-        $this->container['outer_enum'] = isset($data['outer_enum']) ? $data['outer_enum'] : null;
+        $this->container['enum_string'] = $data['enum_string'] ?? null;
+        $this->container['enum_string_required'] = $data['enum_string_required'] ?? null;
+        $this->container['enum_integer'] = $data['enum_integer'] ?? null;
+        $this->container['enum_number'] = $data['enum_number'] ?? null;
+        $this->container['outer_enum'] = $data['outer_enum'] ?? null;
+        $this->container['outer_enum_integer'] = $data['outer_enum_integer'] ?? null;
+        $this->container['outer_enum_default_value'] = $data['outer_enum_default_value'] ?? null;
+        $this->container['outer_enum_integer_default_value'] = $data['outer_enum_integer_default_value'] ?? null;
     }
 
     /**
@@ -342,7 +365,7 @@ class EnumTest implements ModelInterface, ArrayAccess
      *
      * @param string|null $enum_string enum_string
      *
-     * @return $this
+     * @return self
      */
     public function setEnumString($enum_string)
     {
@@ -375,7 +398,7 @@ class EnumTest implements ModelInterface, ArrayAccess
      *
      * @param string $enum_string_required enum_string_required
      *
-     * @return $this
+     * @return self
      */
     public function setEnumStringRequired($enum_string_required)
     {
@@ -408,7 +431,7 @@ class EnumTest implements ModelInterface, ArrayAccess
      *
      * @param int|null $enum_integer enum_integer
      *
-     * @return $this
+     * @return self
      */
     public function setEnumInteger($enum_integer)
     {
@@ -441,7 +464,7 @@ class EnumTest implements ModelInterface, ArrayAccess
      *
      * @param double|null $enum_number enum_number
      *
-     * @return $this
+     * @return self
      */
     public function setEnumNumber($enum_number)
     {
@@ -474,11 +497,83 @@ class EnumTest implements ModelInterface, ArrayAccess
      *
      * @param \OpenAPI\Client\Model\OuterEnum|null $outer_enum outer_enum
      *
-     * @return $this
+     * @return self
      */
     public function setOuterEnum($outer_enum)
     {
         $this->container['outer_enum'] = $outer_enum;
+
+        return $this;
+    }
+
+    /**
+     * Gets outer_enum_integer
+     *
+     * @return \OpenAPI\Client\Model\OuterEnumInteger|null
+     */
+    public function getOuterEnumInteger()
+    {
+        return $this->container['outer_enum_integer'];
+    }
+
+    /**
+     * Sets outer_enum_integer
+     *
+     * @param \OpenAPI\Client\Model\OuterEnumInteger|null $outer_enum_integer outer_enum_integer
+     *
+     * @return self
+     */
+    public function setOuterEnumInteger($outer_enum_integer)
+    {
+        $this->container['outer_enum_integer'] = $outer_enum_integer;
+
+        return $this;
+    }
+
+    /**
+     * Gets outer_enum_default_value
+     *
+     * @return \OpenAPI\Client\Model\OuterEnumDefaultValue|null
+     */
+    public function getOuterEnumDefaultValue()
+    {
+        return $this->container['outer_enum_default_value'];
+    }
+
+    /**
+     * Sets outer_enum_default_value
+     *
+     * @param \OpenAPI\Client\Model\OuterEnumDefaultValue|null $outer_enum_default_value outer_enum_default_value
+     *
+     * @return self
+     */
+    public function setOuterEnumDefaultValue($outer_enum_default_value)
+    {
+        $this->container['outer_enum_default_value'] = $outer_enum_default_value;
+
+        return $this;
+    }
+
+    /**
+     * Gets outer_enum_integer_default_value
+     *
+     * @return \OpenAPI\Client\Model\OuterEnumIntegerDefaultValue|null
+     */
+    public function getOuterEnumIntegerDefaultValue()
+    {
+        return $this->container['outer_enum_integer_default_value'];
+    }
+
+    /**
+     * Sets outer_enum_integer_default_value
+     *
+     * @param \OpenAPI\Client\Model\OuterEnumIntegerDefaultValue|null $outer_enum_integer_default_value outer_enum_integer_default_value
+     *
+     * @return self
+     */
+    public function setOuterEnumIntegerDefaultValue($outer_enum_integer_default_value)
+    {
+        $this->container['outer_enum_integer_default_value'] = $outer_enum_integer_default_value;
 
         return $this;
     }
@@ -499,18 +594,18 @@ class EnumTest implements ModelInterface, ArrayAccess
      *
      * @param integer $offset Offset
      *
-     * @return mixed
+     * @return mixed|null
      */
     public function offsetGet($offset)
     {
-        return isset($this->container[$offset]) ? $this->container[$offset] : null;
+        return $this->container[$offset] ?? null;
     }
 
     /**
      * Sets value based on offset.
      *
-     * @param integer $offset Offset
-     * @param mixed   $value  Value to be set
+     * @param int|null $offset Offset
+     * @param mixed    $value  Value to be set
      *
      * @return void
      */
@@ -533,6 +628,18 @@ class EnumTest implements ModelInterface, ArrayAccess
     public function offsetUnset($offset)
     {
         unset($this->container[$offset]);
+    }
+
+    /**
+     * Serializes the object to a value that can be serialized natively by json_encode().
+     * @link https://www.php.net/manual/en/jsonserializable.jsonserialize.php
+     *
+     * @return mixed Returns data which can be serialized by json_encode(), which is a value
+     * of any type other than a resource.
+     */
+    public function jsonSerialize()
+    {
+       return ObjectSerializer::sanitizeForSerialization($this);
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 /**
  * StoreApi
- * PHP version 7.1
+ * PHP version 7.2
  *
  * @category Class
  * @package  OpenAPI\Client
@@ -73,34 +73,34 @@ class StoreApi
      * @param ClientInterface $client
      * @param Configuration   $config
      * @param HeaderSelector  $selector
-     * @param int             $host_index (Optional) host index to select the list of hosts if defined in the OpenAPI spec
+     * @param int             $hostIndex (Optional) host index to select the list of hosts if defined in the OpenAPI spec
      */
     public function __construct(
         ClientInterface $client = null,
         Configuration $config = null,
         HeaderSelector $selector = null,
-        $host_index = 0
+        $hostIndex = 0
     ) {
         $this->client = $client ?: new Client();
         $this->config = $config ?: new Configuration();
         $this->headerSelector = $selector ?: new HeaderSelector();
-        $this->hostIndex = $host_index;
+        $this->hostIndex = $hostIndex;
     }
 
     /**
      * Set the host index
      *
-     * @param  int Host index (required)
+     * @param int $hostIndex Host index (required)
      */
-    public function setHostIndex($host_index)
+    public function setHostIndex($hostIndex)
     {
-        $this->hostIndex = $host_index;
+        $this->hostIndex = $hostIndex;
     }
 
     /**
      * Get the host index
      *
-     * @return Host index
+     * @return int Host index
      */
     public function getHostIndex()
     {
@@ -276,8 +276,6 @@ class StoreApi
             );
         }
 
-        // body params
-        $_tempBody = null;
 
         if ($multipart) {
             $headers = $this->headerSelector->selectHeadersForMultipart(
@@ -291,21 +289,17 @@ class StoreApi
         }
 
         // for model (json/xml)
-        if (isset($_tempBody)) {
-            // $_tempBody is the method argument, if present
-            if ($headers['Content-Type'] === 'application/json') {
-                $httpBody = \GuzzleHttp\json_encode(ObjectSerializer::sanitizeForSerialization($_tempBody));
-            } else {
-                $httpBody = $_tempBody;
-            }
-        } elseif (count($formParams) > 0) {
+        if (count($formParams) > 0) {
             if ($multipart) {
                 $multipartContents = [];
                 foreach ($formParams as $formParamName => $formParamValue) {
-                    $multipartContents[] = [
-                        'name' => $formParamName,
-                        'contents' => $formParamValue
-                    ];
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
                 }
                 // for HTTP post (form)
                 $httpBody = new MultipartStream($multipartContents);
@@ -530,8 +524,6 @@ class StoreApi
 
 
 
-        // body params
-        $_tempBody = null;
 
         if ($multipart) {
             $headers = $this->headerSelector->selectHeadersForMultipart(
@@ -545,21 +537,17 @@ class StoreApi
         }
 
         // for model (json/xml)
-        if (isset($_tempBody)) {
-            // $_tempBody is the method argument, if present
-            if ($headers['Content-Type'] === 'application/json') {
-                $httpBody = \GuzzleHttp\json_encode(ObjectSerializer::sanitizeForSerialization($_tempBody));
-            } else {
-                $httpBody = $_tempBody;
-            }
-        } elseif (count($formParams) > 0) {
+        if (count($formParams) > 0) {
             if ($multipart) {
                 $multipartContents = [];
                 foreach ($formParams as $formParamName => $formParamValue) {
-                    $multipartContents[] = [
-                        'name' => $formParamName,
-                        'contents' => $formParamValue
-                    ];
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
                 }
                 // for HTTP post (form)
                 $httpBody = new MultipartStream($multipartContents);
@@ -815,8 +803,6 @@ class StoreApi
             );
         }
 
-        // body params
-        $_tempBody = null;
 
         if ($multipart) {
             $headers = $this->headerSelector->selectHeadersForMultipart(
@@ -830,21 +816,17 @@ class StoreApi
         }
 
         // for model (json/xml)
-        if (isset($_tempBody)) {
-            // $_tempBody is the method argument, if present
-            if ($headers['Content-Type'] === 'application/json') {
-                $httpBody = \GuzzleHttp\json_encode(ObjectSerializer::sanitizeForSerialization($_tempBody));
-            } else {
-                $httpBody = $_tempBody;
-            }
-        } elseif (count($formParams) > 0) {
+        if (count($formParams) > 0) {
             if ($multipart) {
                 $multipartContents = [];
                 foreach ($formParams as $formParamName => $formParamValue) {
-                    $multipartContents[] = [
-                        'name' => $formParamName,
-                        'contents' => $formParamValue
-                    ];
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
                 }
                 // for HTTP post (form)
                 $httpBody = new MultipartStream($multipartContents);
@@ -884,15 +866,15 @@ class StoreApi
      *
      * Place an order for a pet
      *
-     * @param  \OpenAPI\Client\Model\Order $body order placed for purchasing the pet (required)
+     * @param  \OpenAPI\Client\Model\Order $order order placed for purchasing the pet (required)
      *
      * @throws \OpenAPI\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
      * @return \OpenAPI\Client\Model\Order
      */
-    public function placeOrder($body)
+    public function placeOrder($order)
     {
-        list($response) = $this->placeOrderWithHttpInfo($body);
+        list($response) = $this->placeOrderWithHttpInfo($order);
         return $response;
     }
 
@@ -901,15 +883,15 @@ class StoreApi
      *
      * Place an order for a pet
      *
-     * @param  \OpenAPI\Client\Model\Order $body order placed for purchasing the pet (required)
+     * @param  \OpenAPI\Client\Model\Order $order order placed for purchasing the pet (required)
      *
      * @throws \OpenAPI\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
      * @return array of \OpenAPI\Client\Model\Order, HTTP status code, HTTP response headers (array of strings)
      */
-    public function placeOrderWithHttpInfo($body)
+    public function placeOrderWithHttpInfo($order)
     {
-        $request = $this->placeOrderRequest($body);
+        $request = $this->placeOrderRequest($order);
 
         try {
             $options = $this->createHttpClientOption();
@@ -989,14 +971,14 @@ class StoreApi
      *
      * Place an order for a pet
      *
-     * @param  \OpenAPI\Client\Model\Order $body order placed for purchasing the pet (required)
+     * @param  \OpenAPI\Client\Model\Order $order order placed for purchasing the pet (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function placeOrderAsync($body)
+    public function placeOrderAsync($order)
     {
-        return $this->placeOrderAsyncWithHttpInfo($body)
+        return $this->placeOrderAsyncWithHttpInfo($order)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -1009,15 +991,15 @@ class StoreApi
      *
      * Place an order for a pet
      *
-     * @param  \OpenAPI\Client\Model\Order $body order placed for purchasing the pet (required)
+     * @param  \OpenAPI\Client\Model\Order $order order placed for purchasing the pet (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function placeOrderAsyncWithHttpInfo($body)
+    public function placeOrderAsyncWithHttpInfo($order)
     {
         $returnType = '\OpenAPI\Client\Model\Order';
-        $request = $this->placeOrderRequest($body);
+        $request = $this->placeOrderRequest($order);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -1056,17 +1038,17 @@ class StoreApi
     /**
      * Create request for operation 'placeOrder'
      *
-     * @param  \OpenAPI\Client\Model\Order $body order placed for purchasing the pet (required)
+     * @param  \OpenAPI\Client\Model\Order $order order placed for purchasing the pet (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    protected function placeOrderRequest($body)
+    protected function placeOrderRequest($order)
     {
-        // verify the required parameter 'body' is set
-        if ($body === null || (is_array($body) && count($body) === 0)) {
+        // verify the required parameter 'order' is set
+        if ($order === null || (is_array($order) && count($order) === 0)) {
             throw new \InvalidArgumentException(
-                'Missing the required parameter $body when calling placeOrder'
+                'Missing the required parameter $order when calling placeOrder'
             );
         }
 
@@ -1080,11 +1062,6 @@ class StoreApi
 
 
 
-        // body params
-        $_tempBody = null;
-        if (isset($body)) {
-            $_tempBody = $body;
-        }
 
         if ($multipart) {
             $headers = $this->headerSelector->selectHeadersForMultipart(
@@ -1093,26 +1070,28 @@ class StoreApi
         } else {
             $headers = $this->headerSelector->selectHeaders(
                 ['application/xml', 'application/json'],
-                []
+                ['application/json']
             );
         }
 
         // for model (json/xml)
-        if (isset($_tempBody)) {
-            // $_tempBody is the method argument, if present
+        if (isset($order)) {
             if ($headers['Content-Type'] === 'application/json') {
-                $httpBody = \GuzzleHttp\json_encode(ObjectSerializer::sanitizeForSerialization($_tempBody));
+                $httpBody = \GuzzleHttp\json_encode(ObjectSerializer::sanitizeForSerialization($order));
             } else {
-                $httpBody = $_tempBody;
+                $httpBody = $order;
             }
         } elseif (count($formParams) > 0) {
             if ($multipart) {
                 $multipartContents = [];
                 foreach ($formParams as $formParamName => $formParamValue) {
-                    $multipartContents[] = [
-                        'name' => $formParamName,
-                        'contents' => $formParamValue
-                    ];
+                    $formParamValueItems = is_array($formParamValue) ? $formParamValue : [$formParamValue];
+                    foreach ($formParamValueItems as $formParamValueItem) {
+                        $multipartContents[] = [
+                            'name' => $formParamName,
+                            'contents' => $formParamValueItem
+                        ];
+                    }
                 }
                 // for HTTP post (form)
                 $httpBody = new MultipartStream($multipartContents);

@@ -7,6 +7,7 @@ use futures::{future, Stream, StreamExt, TryFutureExt, TryStreamExt};
 use hyper::server::conn::Http;
 use hyper::service::Service;
 use log::info;
+#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))]
 use openssl::ssl::SslAcceptorBuilder;
 use std::future::Future;
 use std::marker::PhantomData;
@@ -23,7 +24,6 @@ use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 
 use openapi_v3::models;
 
-#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))]
 /// Builds an SSL implementation for Simple HTTPS from some hard-coded file names
 pub async fn create(addr: &str, https: bool) {
     let addr = addr.parse().expect("Failed to parse bind address");
@@ -99,6 +99,7 @@ use openapi_v3::{
     CallbackWithHeaderPostResponse,
     ComplexQueryParamGetResponse,
     EnumInPathPathParamGetResponse,
+    JsonComplexQueryParamGetResponse,
     MandatoryRequestHeaderGetResponse,
     MergePatchJsonGetResponse,
     MultigetGetResponse,
@@ -154,6 +155,16 @@ impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
     {
         let context = context.clone();
         info!("enum_in_path_path_param_get({:?}) - X-Span-ID: {:?}", path_param, context.get().0.clone());
+        Err("Generic failuare".into())
+    }
+
+    async fn json_complex_query_param_get(
+        &self,
+        list_of_strings: Option<&Vec<models::StringObject>>,
+        context: &C) -> Result<JsonComplexQueryParamGetResponse, ApiError>
+    {
+        let context = context.clone();
+        info!("json_complex_query_param_get({:?}) - X-Span-ID: {:?}", list_of_strings, context.get().0.clone());
         Err("Generic failuare".into())
     }
 

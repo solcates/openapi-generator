@@ -27,9 +27,9 @@ The following generators are available:
 * [elm](generators/elm.md)  
 * [erlang-client](generators/erlang-client.md)  
 * [erlang-proper](generators/erlang-proper.md)  
-* [flash](generators/flash.md)  
+* [flash-deprecated (deprecated)](generators/flash-deprecated.md)  
 * [go](generators/go.md)  
-* [go-experimental (experimental)](generators/go-experimental.md)  
+* [go-deprecated (deprecated)](generators/go-deprecated.md)  
 * [groovy](generators/groovy.md)  
 * [haskell-http-client](generators/haskell-http-client.md)  
 * [java](generators/java.md)  
@@ -60,8 +60,9 @@ The following generators are available:
 * [scalaz](generators/scalaz.md)  
 * [swift4-deprecated (deprecated)](generators/swift4-deprecated.md)  
 * [swift5 (beta)](generators/swift5.md)  
+* [typescript (experimental)](generators/typescript.md)  
 * [typescript-angular](generators/typescript-angular.md)  
-* [typescript-angularjs](generators/typescript-angularjs.md)  
+* [typescript-angularjs-deprecated (deprecated)](generators/typescript-angularjs-deprecated.md)  
 * [typescript-aurelia](generators/typescript-aurelia.md)  
 * [typescript-axios](generators/typescript-axios.md)  
 * [typescript-fetch](generators/typescript-fetch.md)  
@@ -139,13 +140,13 @@ The following generators are available:
 
 ## SCHEMA generators
 * [avro-schema (beta)](generators/avro-schema.md)  
+* [graphql-schema](generators/graphql-schema.md)  
 * [mysql-schema](generators/mysql-schema.md)  
+* [protobuf-schema (beta)](generators/protobuf-schema.md)  
 
 
 ## CONFIG generators
 * [apache2](generators/apache2.md)  
-* [graphql-schema](generators/graphql-schema.md)  
-* [protobuf-schema (beta)](generators/protobuf-schema.md)  
 
 
 

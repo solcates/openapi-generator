@@ -25,7 +25,7 @@ import javax.validation.Valid;
 
 @Path("/fake")
 @Api(description = "the fake API")
-public class FakeApi {
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen")public class FakeApi {
 
     @POST
     @Path("/create_xml_item")
@@ -118,8 +118,9 @@ public class FakeApi {
     @POST
     @Consumes({ "application/x-www-form-urlencoded" })
     @ApiOperation(value = "Fake endpoint for testing various parameters  假端點  偽のエンドポイント  가짜 엔드 포인트", notes = "Fake endpoint for testing various parameters  假端點  偽のエンドポイント  가짜 엔드 포인트", response = Void.class, authorizations = {
+        
         @Authorization(value = "http_basic_test")
-    }, tags={ "fake",  })
+         }, tags={ "fake",  })
     @ApiResponses(value = { 
         @ApiResponse(code = 400, message = "Invalid username supplied", response = Void.class),
         @ApiResponse(code = 404, message = "User not found", response = Void.class)
@@ -187,9 +188,8 @@ public class FakeApi {
     @ApiOperation(value = "uploads an image (required)", notes = "", response = ModelApiResponse.class, authorizations = {
         @Authorization(value = "petstore_auth", scopes = {
             @AuthorizationScope(scope = "write:pets", description = "modify pets in your account"),
-            @AuthorizationScope(scope = "read:pets", description = "read your pets")
-        })
-    }, tags={ "pet" })
+            @AuthorizationScope(scope = "read:pets", description = "read your pets") })
+         }, tags={ "pet" })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "successful operation", response = ModelApiResponse.class)
     })
